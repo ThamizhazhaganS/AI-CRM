@@ -13,6 +13,10 @@
     {
       "source": "/api/:path*",
       "destination": { "service": "backend" }
+    },
+    {
+      "source": "/:path*",
+      "destination": { "service": "frontend" }
     }
   ]
 }
