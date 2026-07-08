@@ -5,13 +5,14 @@
       "framework": "nextjs"
     },
     "backend": {
-      "root": "backend"
+      "root": "backend",
+      "entrypoint": "Dockerfile.vercel"
     }
   },
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "/api/backend/api/:path*"
+      "destination": { "service": "backend" }
     }
   ]
 }
