@@ -1,4 +1,4 @@
-const API_BASE_URL = "";
+const API_BASE_URL = "https://ai-crm-if7v.onrender.com";
 
 // ── Auth helpers ────────────────────────────────────────────────────────────
 
@@ -81,7 +81,7 @@ export const api = {
       try {
         const errorData = await response.json();
         errorMessage = errorData.detail || errorMessage;
-      } catch {}
+      } catch { }
       throw new Error(errorMessage);
     }
 
