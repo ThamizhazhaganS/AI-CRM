@@ -1,10 +1,31 @@
 import enum
 from datetime import datetime
+import json as _json
 from sqlalchemy import (
     Column, String, Integer, Float, Boolean, Text,
-    DateTime, Enum, ForeignKey, JSON
+    DateTime, Enum, ForeignKey
 )
+from sqlalchemy.types import TypeDecorator, TEXT
 from sqlalchemy.orm import relationship
+
+
+class JSONEncodedList(TypeDecorator):
+    """Stores a Python list as a JSON-encoded string. Works on SQLite AND PostgreSQL."""
+    impl = TEXT
+    cache_ok = True
+
+    def process_bind_param(self, value, dialect):
+        if value is None:
+            return "[]"
+        return _json.dumps(value)
+
+    def process_result_value(self, value, dialect):
+        if not value:
+            return []
+        try:
+            return _json.loads(value)
+        except Exception:
+            return []
 from app.database import Base
 
 
@@ -164,7 +185,7 @@ class Property(Base):
     price = Column(String(60), nullable=False)
     sqft = Column(String(40), nullable=True)
     builder = Column(String(200), nullable=True)
-    amenities = Column(JSON, default=list)
+    amenities = Column(JSONEncodedList, default=list)
     status = Column(Enum(PropertyStatus), default=PropertyStatus.available)
     description = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
