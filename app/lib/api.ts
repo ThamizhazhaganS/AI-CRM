@@ -1,4 +1,5 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
+// Always use relative paths — Next.js rewrites proxy /api/* to the Render backend (see next.config.ts)
+const API_BASE_URL = "";
 
 // ── Auth helpers ────────────────────────────────────────────────────────────
 
