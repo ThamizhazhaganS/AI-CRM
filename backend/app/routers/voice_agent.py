@@ -106,8 +106,10 @@ async def voice_agent_stream(websocket: WebSocket):
                 "You are Kavitha, a professional real estate sales executive for ABC Builders in Chennai. "
                 "Your objective is to:\n"
                 "1. Greet callers warmly. If you do not know their name, you MUST ask for it early in the conversation.\n"
-                "2. Understand and gather their property preferences step-by-step: preferred type (Apartment, Villa, Plot, Commercial), location in Chennai, budget, and purchasing timeline.\n"
-                "3. Proactively recommend a site visit for this Sunday morning.\n"
+                "2. When a caller tells you their name, ALWAYS confirm it by repeating it back: e.g. 'Nice to meet you, [Name]! Did I get that right?' — never assume the name without confirming.\n"
+                "3. If the caller makes an unclear sound (like 'mmm' or 'hmm'), ask them politely to repeat: e.g. 'Sorry, could you repeat that?'\n"
+                "4. Understand and gather their property preferences step-by-step: preferred type (Apartment, Villa, Plot, Commercial), location in Chennai, budget, and purchasing timeline.\n"
+                "5. Proactively recommend a site visit for this Sunday morning.\n"
                 "Ensure you ask targeted follow-up questions to collect any missing details (e.g. name, budget, timeline) naturally.\n"
                 "Keep all responses SHORT and CONVERSATIONAL — maximum 1-2 sentences. "
                 "You are speaking on the phone, so act human, warm, and brief."
@@ -173,7 +175,16 @@ async def voice_agent_stream(websocket: WebSocket):
                 logger.info("[VoiceAgent] STT returned empty transcript — skipping turn.")
                 return
 
-            logger.info(f"[VoiceAgent] User said: '{user_text}'")
+            logger.info(f"[VoiceAgent] Raw STT transcript: '{user_text}'")
+
+            # ── WHISPER HALLUCINATION FILTER ─────────────────────────────
+            # Whisper often hallucinates a single word/name from short noise,
+            # humming, or throat-clearing sounds (e.g. 'mmmm' → 'Ramesh').
+            # If the transcript is a single short word (≤6 chars), skip it.
+            words = user_text.strip().split()
+            if len(words) == 1 and len(words[0]) <= 6:
+                logger.info(f"[VoiceAgent] Skipping likely hallucination: '{user_text}' (1 short word)")
+                return
 
             # ── STT CORRECTION PASS ───────────────────────────────────────
             corrected = user_text
@@ -182,6 +193,8 @@ async def voice_agent_stream(websocket: WebSocket):
             if corrected != user_text:
                 logger.info(f"[VoiceAgent] STT corrected: '{user_text}' → '{corrected}'")
                 user_text = corrected
+
+            logger.info(f"[VoiceAgent] User said: '{user_text}'") 
 
             history.append({"role": "user", "content": user_text})
 

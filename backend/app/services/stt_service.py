@@ -51,7 +51,7 @@ class STTService:
             print("STT Error: GROQ_API_KEY is not configured.")
             return ""
 
-        if not ulaw_data or len(ulaw_data) < 320: # Less than 40ms of audio
+        if not ulaw_data or len(ulaw_data) < 4000: # Less than ~500ms of audio — filters noise/humming
             return ""
 
         wav_bytes = cls._ulaw_bytes_to_pcm_wav(ulaw_data)
